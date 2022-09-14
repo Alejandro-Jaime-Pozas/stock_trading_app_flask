@@ -1,0 +1,69 @@
+from app import db
+import os
+import base64
+from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
+
+# change here
+# create user class that has username, email, password, password hash, create date 
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False, unique=True)
+    email = db.Column(db.String(50), nullable=False, unique=True)
+    password = db.Column(db.String(128), nullable=False) 
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    token = db.Column(db.String(32), unique=True, index=True) # COME BACK index
+    token_expiration = db.Column(db.DateTime)
+    cash = db.Column(db.Integer, default=0)
+    # trades = db.relationship('Trade', backref='owner', lazy=True) 
+
+    # need fns to CRUD user? 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs) # taking in all of the kwargs from the db.Model class..
+        self.password = generate_password_hash(kwargs['password']) # changing the state of password to a hashed version
+        db.session.add(self)
+        db.session.commit()
+        # could add cash acct here..but should it be a part of the user table better? YES bc table updates
+
+    def __repr__(self):
+        return f"<User|{self.username}, {self.email}>"
+
+    def cash_balance(self):
+        # the user will either press deposit/add or withdraw funds button on react..create handleClick for each 
+        # both add/remove funds are put methods, changing the value of the cash attr...
+        pass
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
+    def get_token(self, expires_in=3600): # COME BACK
+        now = datetime.utcnow()
+        if self.token and self.token_expiration > now + timedelta(minutes=1): # this checks to see if there is an existing token for user
+            return self.token
+        self.token = base64.b64encode(os.urandom(32)).decode('utf-8') # this is gibberish
+        self.token_expiration = now + timedelta(seconds=expires_in)
+        db.session.commit() # why no db.session.add??
+        return self.token
+
+    def delete(self):
+        db.session.delete(self) # it seems like delete is a fn from the db.session module...
+        db.session.commit() # why no db.session.add??
+
+    def update(self, data): # COME BACK
+        for field in data:
+            if field not in {'username', 'email', 'password'}: 
+                continue
+            if field == 'password':
+                setattr(self, field, generate_password_hash(data[field])) # for dictionaries, sets self (user instance)'s pwd to new hash pwd
+            else:
+                setattr(self, field, data[field])
+        db.session.commit() # commit changes, dont add
+
+    # create a json type object
+    def to_dict(self): 
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'date_created': self.date_created
+        }

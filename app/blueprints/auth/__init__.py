@@ -4,4 +4,4 @@ from flask import Blueprint
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 # import the routes for /auth to save them into the main app...
-from . import routes
+from . import routes, models
