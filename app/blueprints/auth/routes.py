@@ -72,3 +72,10 @@ def delete_user(id):
 @token_auth.login_required
 def me():
     return token_auth.current_user().to_dict() # grabs the current user if authenticated, and returns an object type...dk why no jsonify needed
+
+
+# update a user's cash balance from token
+# @auth.route('/me', methods=["GET", "PUT"])
+# def update_cash():
+#     current_user = token_auth.current_user()
+#     current_user.cash = 

@@ -1,18 +1,37 @@
+from crypt import methods
+from . import bp as portfolio
+from flask import jsonify, request
+from ..auth.http_auth import token_auth
+# from .models import Stock # when models is complete remove comment
 
-# if this is all user can do, it would be:
-# 1. add funds to                       portfolio cash funds +
-# 2. remove funds from                  portfolio cash funds -
-# 3. remove portfolio cash funds    ==  add stock funds into a set amount of shares of a set stock ticker
-# 4. add portfolio cash funds       ==  remove stock funds from a set amount of shares of a set stock ticker
-# need ticker, current price, amount of shares, date for every transaction
+# on the app, will need routes to: 
+# create a new stock (buy a new stock you don't own)        POST, token auth
+@portfolio.route('/stocks', methods=["GET", "POST" ])
+@token_auth.login_required
+def create_stock():
+    # need to receive user info on stock, including price, shares, and remove the total $ amount from cash portfolio, add to stock
+    pass
 
-# Trade will be the name of the class used to store the stock transaction info
-# need
-    # id
-    # ticker
-    # current price
-    # shares amount
-    # create_date
-    # owner (user relationship in foreign key so User)
 
-# create new methods for User to add/remove funds from cash funds a new cash column for the user?, 
+# get all user's stocks (show user a list of his stocks)    GET, token auth
+@portfolio.route('/<int:id>', methods=["GET", ])
+@token_auth.login_required
+def get_stocks():
+    # need to get the user's id, and then get all of that user's stocks from stock table with that user id
+    pass
+
+
+# update a stock (add/remove funds)                         PUT, token auth
+@portfolio.route('/stocks/<int:stock_id>', methods=["GET", "PUT"])
+@token_auth.login_required
+def update_stock():
+    # can only update the share amount of stock, not price. take the shares to sell/buy and add/remove from stock shares amount
+    pass
+
+
+# delete a stock (if remove all funds from stock)           DELETE, token auth
+@portfolio.route('/stocks/<int:stock_id>', methods=["GET", "DELETE"])
+@token_auth.login_required
+def delete_stock():
+    # only do this if user removes all shares, so shares equals 0 after the user sells all of his shares (maybe need to add btn to react frontend to remove/delete all shares...)
+    pass

@@ -15,7 +15,7 @@ class User(db.Model):
     token = db.Column(db.String(32), unique=True, index=True) # COME BACK index
     token_expiration = db.Column(db.DateTime)
     cash = db.Column(db.Integer, default=0)
-    # trades = db.relationship('Trade', backref='owner', lazy=True) 
+    # stocks = db.relationship('Stock', backref='owner', lazy=True) 
 
     # need fns to CRUD user? 
     def __init__(self, **kwargs):
@@ -30,7 +30,7 @@ class User(db.Model):
 
     def cash_balance(self):
         # the user will either press deposit/add or withdraw funds button on react..create handleClick for each 
-        # both add/remove funds are put methods, changing the value of the cash attr...
+        # both add/remove funds are put methods, changing the value of the cash attr...need token and body
         pass
 
     def check_password(self, password):
@@ -51,10 +51,12 @@ class User(db.Model):
 
     def update(self, data): # COME BACK
         for field in data:
-            if field not in {'username', 'email', 'password'}: 
+            if field not in {'username', 'email', 'password', 'cash'}: 
                 continue
             if field == 'password':
                 setattr(self, field, generate_password_hash(data[field])) # for dictionaries, sets self (user instance)'s pwd to new hash pwd
+            if field == 'cash':
+                setattr(self, field, self.cash + data[field])
             else:
                 setattr(self, field, data[field])
         db.session.commit() # commit changes, dont add
@@ -65,5 +67,6 @@ class User(db.Model):
             'id': self.id,
             'username': self.username,
             'email': self.email,
-            'date_created': self.date_created
+            'date_created': self.date_created,
+            'cash': self.cash
         }
