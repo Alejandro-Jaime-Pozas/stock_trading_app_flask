@@ -23,7 +23,7 @@ def get_users():
 # create a user - longest code. need successful body: username, email, password, confirm pass
 @auth.route('/users', methods=["GET", "POST"])
 def create_user():
-    data = request.json
+    data = request.json # this gets the input from the frontend fetch method body...
     # Validate the data
     for field in {'username', 'email', 'password'}:
         if field not in data:

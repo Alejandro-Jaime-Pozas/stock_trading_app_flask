@@ -15,7 +15,7 @@ class User(db.Model):
     token = db.Column(db.String(32), unique=True, index=True) # COME BACK index
     token_expiration = db.Column(db.DateTime)
     cash = db.Column(db.Integer, default=0)
-    # stocks = db.relationship('Stock', backref='owner', lazy=True) 
+    stocks = db.relationship('Stock', backref='owner', lazy=True) 
 
     # need fns to CRUD user? 
     def __init__(self, **kwargs):
@@ -53,10 +53,12 @@ class User(db.Model):
         for field in data:
             if field not in {'username', 'email', 'password', 'cash'}: 
                 continue
+            # if not data[field]:
+            #     continue
             if field == 'password':
                 setattr(self, field, generate_password_hash(data[field])) # for dictionaries, sets self (user instance)'s pwd to new hash pwd
             if field == 'cash':
-                setattr(self, field, self.cash + data[field])
+                setattr(self, field, self.cash + int(data[field]))
             else:
                 setattr(self, field, data[field])
         db.session.commit() # commit changes, dont add

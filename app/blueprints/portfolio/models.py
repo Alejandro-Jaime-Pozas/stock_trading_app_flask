@@ -1,13 +1,79 @@
-# DONE 1. add funds to                       portfolio cash funds +
-# DONE 2. remove funds from                  portfolio cash funds -
-# 3. remove portfolio cash funds    ==  add stock funds into a set amount of shares of a set stock ticker
-# 4. add portfolio cash funds       ==  remove stock funds from a set amount of shares of a set stock ticker
+from app import db
+from datetime import datetime
+from app.blueprints.auth.models import User
+from flask import jsonify
 
-# Stock will be the name of the class used to store the stock transaction info
-# need
-    # id
-    # ticker
-    # current price
-    # shares amount
-    # create_date
-    # owner (user relationship in foreign key so User)
+class Stock(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ticker = db.Column(db.String(8), nullable=False) # not unique since multiple users can have same stock
+    new_price = db.Column(db.Integer, nullable=False)
+    new_shares = db.Column(db.Integer, nullable=False)
+    create_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) # why no () for utcnow?
+    total_shares = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
+    total_invested = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
+    total_divested = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
+    avg_price = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
+    real_value = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # 'user.id' refers to User class, their id primary key...; this accepts an input either as string or integer and turns to integer
+
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        db.session.add(self)
+        db.session.commit()
+
+    def __repr__(self):
+        return f'< Stock {self.ticker}|user id {self.user_id}'
+
+    def update(self, data): # data is the dict of new_price and new_shares...
+        # need to take the data in, change new_price and new_shares, and set new values for calculations...
+        for key in data:
+            setattr(self, key, data[key])
+        self.calculations()
+        db.session.commit()
+
+    def calculations(self):
+        # if self.new_price * self.new_shares > User.query.get(self.user_id).cash:
+        #     return jsonify({'error': f'You do not have enough cash for this trade'}), 400
+        # if for 1st instance when stock created
+        if not self.total_shares:
+            self.total_shares = self.new_shares
+            self.total_invested = self.new_shares * self.new_price
+            self.avg_price = self.new_price
+            self.real_value = self.new_shares * self.new_price
+            self.total_divested = 0
+            db.session.commit()
+        elif self.total_shares:
+            self.total_shares += self.new_shares
+            if self.new_shares > 0:
+                self.total_invested += self.new_shares * self.new_price # this is sumproduct of past 
+            if self.total_shares != 0:
+                self.avg_price = self.total_invested / self.total_shares # this could be wrong since it depends on new total_invested
+            self.real_value = self.total_shares * self.new_price # same here couold be wrong
+            if self.new_shares < 0:
+                self.total_divested += self.new_shares * self.new_price
+            db.session.commit()
+
+    def delete(self): # , data
+        # for key in data:
+        #     if key == 'new_shares':
+        #         if self.total_shares + data['new_shares'] <= 0:
+        #             return jsonify({'error': f'You cannot remove more shares than you own ({self.total_shares})'}), 400
+        #         setattr(self, key, data[key])
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'ticker': self.ticker,
+            'new_price': self.new_price,
+            'new_shares': self.new_shares,
+            'create_date': self.create_date,
+            'total_shares': self.total_shares,
+            'total_invested': self.total_invested,
+            'total_divested': self.total_divested,
+            'avg_price': self.avg_price,
+            'real_value': self.real_value,
+            'owner': User.query.get(self.user_id).to_dict() # this returns the User to_dict() fn from User class...smart
+        }
