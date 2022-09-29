@@ -1,3 +1,5 @@
+# this is to in theory run flask without having to input the user or db variables
+
 from app import app, db
 from app.blueprints.auth.models import User
 # from app.blueprints.portfolio.models import Post
