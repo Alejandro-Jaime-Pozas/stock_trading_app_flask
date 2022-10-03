@@ -40,7 +40,7 @@ class User(db.Model):
         now = datetime.utcnow()
         if self.token and self.token_expiration > now + timedelta(minutes=1): # this checks to see if there is an existing token for user
             return self.token
-        self.token = base64.b64encode(os.urandom(32)).decode('utf-8') # this is gibberish
+        self.token = base64.b64encode(os.urandom(64)).decode('utf-8') # this is gibberish
         self.token_expiration = now + timedelta(seconds=expires_in)
         db.session.commit() # why no db.session.add??
         return self.token
