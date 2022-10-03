@@ -12,7 +12,7 @@ class User(db.Model):
     email = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(128), nullable=False) 
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    token = db.Column(db.String(32), unique=True, index=True) # COME BACK index
+    token = db.Column(db.String(64), unique=True, index=True) # COME BACK index
     token_expiration = db.Column(db.DateTime)
     cash = db.Column(db.Integer, default=0)
     stocks = db.relationship('Stock', backref='owner', lazy=True) 
