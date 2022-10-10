@@ -6,14 +6,14 @@ from flask import jsonify
 class Stock(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ticker = db.Column(db.String(8), nullable=False) # not unique since multiple users can have same stock
-    new_price = db.Column(db.Integer, nullable=False)
+    new_price = db.Column(db.Float, nullable=False)
     new_shares = db.Column(db.Integer, nullable=False)
     create_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) # why no () for utcnow?
     total_shares = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
-    total_invested = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
-    total_divested = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
-    avg_price = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
-    real_value = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
+    total_invested = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
+    total_divested = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
+    avg_price = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
+    real_value = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # 'user.id' refers to User class, their id primary key...; this accepts an input either as string or integer and turns to integer
 
 

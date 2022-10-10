@@ -4,7 +4,6 @@ import base64
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# change here
 # create user class that has username, email, password, password hash, create date 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -17,7 +16,7 @@ class User(db.Model):
     cash = db.Column(db.Integer, default=0)
     stocks = db.relationship('Stock', backref='owner', lazy=True) 
 
-    # need fns to CRUD user? 
+    # need fns to CRUD user?
     def __init__(self, **kwargs):
         super().__init__(**kwargs) # taking in all of the kwargs from the db.Model class..
         self.password = generate_password_hash(kwargs['password']) # changing the state of password to a hashed version

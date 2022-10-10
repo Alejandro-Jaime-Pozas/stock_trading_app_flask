@@ -27,6 +27,7 @@ def create_stock():
     current_user = token_auth.current_user()
     if cash_needed > current_user.cash: # IF USER INPUTS MORE SHARES THAN THEIR CASH ACCT BALANCE
         return jsonify({'error': f'Not enough funds for transfer'}), 400
+    # dont think I need this for loop below bc react frontend covers it..
     for stock in current_user.stocks:
         if stock.ticker == data['ticker']:
             return jsonify({'error': f'You already have {stock.ticker} in your stocks.'}), 400 # bad req
