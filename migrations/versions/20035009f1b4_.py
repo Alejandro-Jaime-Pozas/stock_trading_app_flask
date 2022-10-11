@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 67fbe4a0366d
+Revision ID: 20035009f1b4
 Revises: 
-Create Date: 2022-10-03 11:13:16.309082
+Create Date: 2022-10-11 11:31:25.465972
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '67fbe4a0366d'
+revision = '20035009f1b4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -35,14 +35,14 @@ def upgrade():
     op.create_table('stock',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('ticker', sa.String(length=8), nullable=False),
-    sa.Column('new_price', sa.Integer(), nullable=False),
+    sa.Column('new_price', sa.Float(), nullable=False),
     sa.Column('new_shares', sa.Integer(), nullable=False),
     sa.Column('create_date', sa.DateTime(), nullable=False),
     sa.Column('total_shares', sa.Integer(), nullable=True),
-    sa.Column('total_invested', sa.Integer(), nullable=True),
-    sa.Column('total_divested', sa.Integer(), nullable=True),
-    sa.Column('avg_price', sa.Integer(), nullable=True),
-    sa.Column('real_value', sa.Integer(), nullable=True),
+    sa.Column('total_invested', sa.Float(), nullable=True),
+    sa.Column('total_divested', sa.Float(), nullable=True),
+    sa.Column('avg_price', sa.Float(), nullable=True),
+    sa.Column('real_value', sa.Float(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
