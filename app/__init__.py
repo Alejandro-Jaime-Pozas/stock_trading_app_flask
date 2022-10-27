@@ -2,17 +2,17 @@
 from flask import Flask # Flask class from the flask package
 from config import Config # this config refers to class in file config.py, refers to database stuff
 from flask_sqlalchemy import SQLAlchemy # SQLAlchemy package allows python > sql tables/translation/communication?
-from flask_migrate import Migrate # migrate allows for new data to populate in database?
+from flask_migrate import Migrate # migrate allows for changes in database and upgrades/downgrades
 from flask_cors import CORS
 
 
-app = Flask(__name__) # calls Flask class in flask package with input __name__
+app = Flask(__name__) # calls Flask class in flask package with inherited __name__
 app.config.from_object(Config)
 # app.config['SECRET_KEY'] = 'you-will-never-guess' # creates a secret key into app into config which is
 # the subclass of a dict and acts the same as a dict
 # this secret key is a CSRF token that needs to be validated before being submitted
 
-# add flask-cors cross-origin resource sharing
+# add flask-cors cross-origin resource sharing for external code sources to access this app's resources
 CORS(app)
 
 # create an instance of SQLAlchemy (the ORM) w the Flask Application
