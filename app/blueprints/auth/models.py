@@ -19,8 +19,8 @@ class User(db.Model):
     # need fns to CRUD user?
     def __init__(self, **kwargs):
         super().__init__(**kwargs) # taking in all of the kwargs from the db.Model class..
-        self.password = generate_password_hash(kwargs['password']) # changing the state of password to a hashed version
-        print(type(kwargs))
+        self.password = generate_password_hash(kwargs['password']) # kwargs here is a dict from def __init__ of User; changing the state of password to a hashed version
+        # print(type(kwargs))
         db.session.add(self)
         db.session.commit()
         # could add cash acct here..but should it be a part of the user table better? YES bc table updates
