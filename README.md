@@ -1,8 +1,11 @@
+VENV ISSUES: ALWAYS MAKE SURE TO GRAB THE CORRECT VENV, WHAT HAPPENS OFTEN IS THAT THE (venv) IN PARENTHESES IS JUST (venv) vs the actual name of the venv...try kill terminal if not working, until the name reflects the same name as venv file in dir. ie, dir > venv-personal; terminal > (venv-personal), not (venv)
+
+>>> requirements.txt is original, requirements2.txt needed bc greenlit and psycopg2 not able to be installed in respective versions. 
+
 will use flask_social_media_backend as reference to create my stock app flask backend..
 copy content and paste it, once I am confident enough, try to do some routes/models on my own..
 created two separate blueprints, one for authentication/user db, the other for the user's ability to create a portfolio....
 
->>> requirements.txt is original, requirements2.txt needed bc greenlit and psycopg2 not able to be installed in respective versions. 
 
 
 LEAVE PORTFOLIO FOLDER FOR LATER, FINISH THE AUTH FIRST
