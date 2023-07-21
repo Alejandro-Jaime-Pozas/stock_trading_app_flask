@@ -1,4 +1,4 @@
-# this is to in theory run flask without having to input the user or db variables
+# this is to in theory run flask without having to input the user or db variables every time i'm testing it out
 
 from app import app, db
 from app.blueprints.auth.models import User

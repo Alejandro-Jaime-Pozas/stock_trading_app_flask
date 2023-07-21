@@ -1,0 +1,1 @@
+when changing a user pwd through postman, the pwd hash doesn't update, and i can't obtain token for the user next time i try with the new pwd. it says unauthorized access.
