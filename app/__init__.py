@@ -12,7 +12,7 @@ app.config.from_object(Config)
 # the subclass of a dict and acts the same as a dict
 # this secret key is a CSRF token that needs to be validated before being submitted
 
-# add flask-cors cross-origin resource sharing for external code sources to access this app's resources
+# add flask-cors cross-origin resource sharing for external code sources to access this app's resources ie. React app to access this Flask app
 CORS(app)
 
 # create an instance of SQLAlchemy (the ORM) w the Flask Application
