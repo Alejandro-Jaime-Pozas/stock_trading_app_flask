@@ -6,7 +6,7 @@ from flask_migrate import Migrate # migrate allows for changes in database and u
 from flask_cors import CORS
 
 
-app = Flask(__name__) # calls Flask class in flask package with inherited __name__
+app = Flask(__name__) # calls Flask class in flask package; passes in this module's __name__ which is default __main__
 app.config.from_object(Config)
 # app.config['SECRET_KEY'] = 'you-will-never-guess' # creates a secret key into app into config which is
 # the subclass of a dict and acts the same as a dict
