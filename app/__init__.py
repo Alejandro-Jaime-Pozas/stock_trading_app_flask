@@ -26,4 +26,4 @@ app.register_blueprint(auth)
 from app.blueprints.portfolio import bp as portfolio
 app.register_blueprint(portfolio)
 
-from app import routes # you need to include this AFTER flask instance to avoid infinite loop...the . refers to the current folder; 
+from . import routes # you need to include this AFTER flask instance to avoid infinite loop...the . refers to the current folder; 
