@@ -9,4 +9,4 @@ def index():
 
 @app.route('/test')
 def test():
-    return "<h1>this is a test, don't know if this will display visually in app, most prob not</h1>"
+    return "<h1>this is a test, don't know if this will display visually in app (it does)</h1>"
