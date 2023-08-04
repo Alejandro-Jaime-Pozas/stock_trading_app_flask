@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # create user class that has username, email, password, password hash, create date 
-class User(db.Model):
+class User(db.Model): # this calls db migrate package which in turn runs Model class from SQLAlchemy
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(50), nullable=False, unique=True)
