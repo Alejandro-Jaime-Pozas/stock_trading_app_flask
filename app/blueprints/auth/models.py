@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # create user class that has username, email, password, password hash, create date 
-class User(db.Model): # this calls db migrate package which in turn runs Model class from SQLAlchemy
+class User(db.Model): # this calls Model class from SQLAlchemy db instance
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(50), nullable=False, unique=True)
@@ -14,9 +14,9 @@ class User(db.Model): # this calls db migrate package which in turn runs Model c
     token = db.Column(db.String(64), unique=True, index=True) # COME BACK index
     token_expiration = db.Column(db.DateTime)
     cash = db.Column(db.Integer, default=0)
-    stocks = db.relationship('Stock', backref='owner', lazy=True) 
+    stocks = db.relationship('Stock', backref='owner', lazy=True) # COME BACK lazy
 
-    # need fns to CRUD user?
+    # need fns to CRUD user
     def __init__(self, **kwargs):
         super().__init__(**kwargs) # taking in all of the kwargs when instance created, and also super() taking all of the db.Model attributes
         self.password = generate_password_hash(kwargs['password']) # kwargs here is a dict from def __init__ of User; changing the state of password to a hashed version
