@@ -18,7 +18,7 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
 
     # need fns to CRUD user
     def __init__(self, **kwargs):
-        super().__init__(**kwargs) # taking in all of the kwargs when instance created, and also super() taking all of the db.Model attributes
+        super().__init__(**kwargs) # super() passing in new kwargs to existing db.Model attributes
         self.password = generate_password_hash(kwargs['password']) # kwargs here is a dict from def __init__ of User; changing the state of password to a hashed version
         # print(type(kwargs))
         db.session.add(self)
