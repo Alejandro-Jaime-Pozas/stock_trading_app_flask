@@ -42,12 +42,12 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
             return self.token
         self.token = base64.b64encode(os.urandom(16)).decode('utf-8') # this is gibberish
         self.token_expiration = now + timedelta(seconds=expires_in)
-        db.session.commit() # why no db.session.add??
+        db.session.commit() # why no db.session.add?? bc there already exists a user instance
         return self.token
 
     def delete(self):
         db.session.delete(self) # it seems like delete is a fn from the db.session module...
-        db.session.commit() # why no db.session.add??
+        db.session.commit()
 
     def update(self, data): # COME BACK
         for field in data:
