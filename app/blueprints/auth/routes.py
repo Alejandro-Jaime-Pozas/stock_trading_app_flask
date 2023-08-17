@@ -5,14 +5,6 @@ from .models import User
 from flask import jsonify, request
 
 
-# login - get token with username/password in header
-@auth.route('/token', methods=["GET"])
-@basic_auth.login_required
-def get_token():
-    user = basic_auth.current_user() # this somehow retrieves the current user from db
-    token = user.get_token()
-    return jsonify({'token': token})
-
 # get all users
 @auth.route('/users', methods=["GET"])
 @token_auth.login_required
@@ -41,6 +33,14 @@ def create_user():
     new_user = User(**data)
 
     return jsonify(new_user.to_dict())
+
+# login - get token with username/password in header
+@auth.route('/token', methods=["GET"])
+@basic_auth.login_required
+def get_token():
+    user = basic_auth.current_user() # this somehow retrieves the current user from db
+    token = user.get_token()
+    return jsonify({'token': token})
 
 # update a user by id
 @auth.route('/users/<int:id>', methods=["GET", "PUT"])
