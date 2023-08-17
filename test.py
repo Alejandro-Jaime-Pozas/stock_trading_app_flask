@@ -19,9 +19,13 @@
 # d = dog(**data)
 # print(d)
 
-from forex import CurrencyRates
+# from forex import CurrencyRates
 
-c = CurrencyRates()
-amount_in_usd = 100  # Enter the amount in USD you want to convert
-converted_amount = c.convert("USD", "MXN", amount_in_usd)
-print(f"{amount_in_usd} USD is equal to {converted_amount} MXN")
+# c = CurrencyRates()
+# amount_in_usd = 100  # Enter the amount in USD you want to convert
+# converted_amount = c.convert("USD", "MXN", amount_in_usd)
+# print(f"{amount_in_usd} USD is equal to {converted_amount} MXN")
+
+x = [1,2,3,4]
+y = [n * 2 for n in x]
+print(y)
