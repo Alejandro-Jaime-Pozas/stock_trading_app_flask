@@ -5,13 +5,6 @@ from .models import User
 from flask import jsonify, request
 
 
-# get all users
-@auth.route('/users', methods=["GET"])
-@token_auth.login_required
-def get_users():
-    users = User.query.all() # this is a list...need to jsonify a list
-    return jsonify([user.to_dict() for user in users])
-
 # create a user - longest code. need successful body: username, email, password, confirm pass
 @auth.route('/users', methods=["GET", "POST"])
 def create_user():
@@ -33,6 +26,13 @@ def create_user():
     new_user = User(**data)
 
     return jsonify(new_user.to_dict())
+
+# get all users
+@auth.route('/users', methods=["GET"])
+@token_auth.login_required
+def get_users():
+    users = User.query.all() # this is a list...need to jsonify a list
+    return jsonify([user.to_dict() for user in users])
 
 # login - get token with username/password in header
 @auth.route('/token', methods=["GET"])
