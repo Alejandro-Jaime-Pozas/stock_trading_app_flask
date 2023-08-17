@@ -55,7 +55,7 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
                 continue
             # if not data[field]:
             #     continue
-            if field == 'password':
+            if field == 'password': # THIS FIELD IS NOT UPDATING WITH HASHED PASSWORD
                 setattr(self, field, generate_password_hash(data[field])) # for dictionaries, sets self (user instance)'s pwd to new hash pwd to be able to compare encrypted pwd to real pwd
             if field == 'cash':
                 setattr(self, field, self.cash + int(data[field]))
