@@ -1,3 +1,4 @@
-venv-personal/
-venv-scalero/
+venv-personal
+venv-scalero
 app.db
+migrations
