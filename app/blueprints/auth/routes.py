@@ -27,13 +27,6 @@ def create_user():
 
     return jsonify(new_user.to_dict())
 
-# get all users
-@auth.route('/users', methods=["GET"])
-@token_auth.login_required
-def get_users():
-    users = User.query.all() # this is a list...need to jsonify a list
-    return jsonify([user.to_dict() for user in users])
-
 # login - get token with username/password in header
 @auth.route('/token', methods=["GET"])
 @basic_auth.login_required
@@ -72,6 +65,14 @@ def delete_user(id):
 @token_auth.login_required
 def me():
     return token_auth.current_user().to_dict() # grabs the current user if authenticated, and returns an object type...dk why no jsonify needed
+
+
+# get all users
+@auth.route('/users', methods=["GET"])
+@token_auth.login_required
+def get_users():
+    users = User.query.all() # this is a list...need to jsonify a list
+    return jsonify([user.to_dict() for user in users])
 
 
 # update a user's cash balance from token
