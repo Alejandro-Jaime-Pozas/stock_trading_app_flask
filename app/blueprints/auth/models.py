@@ -9,7 +9,7 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(50), nullable=False, unique=True)
-    pwd_hash = db.Column(db.String(128), nullable=False) 
+    password = db.Column(db.String(128), nullable=False) 
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     token = db.Column(db.String(64), unique=True, index=True) # COME BACK index
     token_expiration = db.Column(db.DateTime)
@@ -19,11 +19,10 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
     # need fns to CRUD user
     def __init__(self, **kwargs):
         super().__init__(**kwargs) # super() passing in new kwargs to existing db.Model attributes
-        self.pwd_hash = generate_password_hash(kwargs['password']) # kwargs here is a dict from def __init__ of User; changing the state of password to a hashed version
+        self.password = generate_password_hash(kwargs['password']) # kwargs here is a dict from def __init__ of User; changing the state of password to a hashed version
         # print(type(kwargs))
         db.session.add(self)
         db.session.commit()
-        # could add cash acct here..but should it be a part of the user table better? YES bc table updates
 
     def __repr__(self):
         return f"<User|{self.username}, {self.email}>"
@@ -34,7 +33,7 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
         pass
 
     def check_password(self, password):
-        return check_password_hash(self.pwd_hash, password)
+        return check_password_hash(self.password, password)
 
     def get_token(self, expires_in=3600): # COME BACK
         now = datetime.utcnow()

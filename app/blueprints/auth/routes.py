@@ -17,13 +17,13 @@ def create_user():
     username = data['username']
     email = data['email']
     # Check if the username or email already exists
-    user_exists = User.query.filter((User.username == username)|(User.email == email)).all() # COME BACK
-    # if it is, return back to register
+    user_exists = User.query.filter((User.username == username)|(User.email == email)).all() # COME BACK, shouldn't this work with first()?
+    # if it is, return back to signup
     if user_exists:
         return jsonify({'error': f"User with username {username} or email {email} already exists"}), 400
     # Create new user
-    # new_user = User(username=username, email=email, password=data['password'])
-    new_user = User(**data)
+    new_user = User(username=username, email=email, password=data['password'])
+    # new_user = User(**data)
 
     return jsonify(new_user.to_dict())
 
