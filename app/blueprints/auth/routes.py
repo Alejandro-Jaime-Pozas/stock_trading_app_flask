@@ -22,8 +22,8 @@ def create_user():
     if user_exists:
         return jsonify({'error': f"User with username {username} or email {email} already exists"}), 400
     # Create new user
-    new_user = User(username=username, email=email, password=data['password'])
-    # new_user = User(**data)
+    # new_user = User(username=username, email=email, password=data['password'])
+    new_user = User(**data)
 
     return jsonify(new_user.to_dict())
 
