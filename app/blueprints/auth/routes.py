@@ -67,16 +67,9 @@ def me():
     return token_auth.current_user().to_dict() # grabs the current user if authenticated, and returns an object type...dk why no jsonify needed
 
 
-# get all users
+# get all users - WILL NEED TO UPDATE THIS TO ONLY BE AVAILABLE FOR ADMIN USER, NOT TYPICAL USERS
 @auth.route('/users', methods=["GET"])
 @token_auth.login_required
 def get_users():
     users = User.query.all() # this is a list...need to jsonify a list
     return jsonify([user.to_dict() for user in users])
-
-
-# update a user's cash balance from token
-# @auth.route('/me', methods=["GET", "PUT"])
-# def update_cash():
-#     current_user = token_auth.current_user()
-#     current_user.cash = 
