@@ -42,7 +42,7 @@ def updated_user(id):
     current_user = token_auth.current_user()
     if current_user.id != id:
         return jsonify({'error': 'You are not allowed to edit this user'}), 403 # what if no jsnofiy??
-    user = User.query.get_or_404(id)
+    user = User.query.get_or_404(id) # WHY GETTING THE USER AGAIN IF ALREADY HAVE USER IN current_user??
     data = request.json
     user.update(data)
     return jsonify(user.to_dict())
