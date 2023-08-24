@@ -3,7 +3,7 @@ from datetime import datetime
 from app.blueprints.auth.models import User
 from flask import jsonify
 
-class Stock(db.Model):
+class Stock(db.Model): # would want to add transaction history...so instead of just Stock model, buy/sell model too
     id = db.Column(db.Integer, primary_key=True)
     ticker = db.Column(db.String(8), nullable=False) # not unique since multiple users can have same stock
     new_price = db.Column(db.Float, nullable=False)
