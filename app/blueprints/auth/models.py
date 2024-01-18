@@ -1,11 +1,11 @@
 from app import db
-import os
-import base64
+import os, base64
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # create user class that has username, email, password, password hash, create date 
 class User(db.Model): # this calls Model class from SQLAlchemy db instance
+    """User class needs unique username and email, and standard password"""
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(50), nullable=False, unique=True)
@@ -18,9 +18,9 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
 
     # need fns to CRUD user
     def __init__(self, **kwargs):
-        super().__init__(**kwargs) # super() passing in new kwargs to existing db.Model attributes
+        super().__init__(**kwargs) # super() passing in new kwargs to existing db.Model AND class level attributes
         self.password = generate_password_hash(kwargs['password']) # kwargs here is a dict from def __init__ of User; changing the state of password to a hashed version
-        # print(type(kwargs))
+        # print(kwargs) # for some reason only user input kwargs are printed..
         db.session.add(self)
         db.session.commit()
 
