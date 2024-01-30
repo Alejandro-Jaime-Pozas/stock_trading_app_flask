@@ -44,6 +44,12 @@ def updated_user(id):
         return jsonify({'error': 'You are not allowed to edit this user'}), 403 # what if no jsnofiy??
     user = User.query.get_or_404(id) # WHY GETTING THE USER AGAIN IF ALREADY HAVE USER IN current_user??
     data = request.json
+    # if user tries to update username or email that other user has, reject
+    for field in data:
+        if field in ('username', 'email'):
+            user_exists = User.query.filter((User.username == data[field])|(User.email == data[field])).first() # first should work here
+            if user_exists:
+                return jsonify({'error': f"{field}: {data[field]} already exists"}), 400 # bad request
     user.update(data)
     return jsonify(user.to_dict())
 
