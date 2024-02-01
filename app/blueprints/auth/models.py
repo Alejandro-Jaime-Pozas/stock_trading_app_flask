@@ -14,7 +14,7 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
     token = db.Column(db.String(64), unique=True, index=True) # COME BACK index
     token_expiration = db.Column(db.DateTime)
     cash = db.Column(db.Integer, default=0)
-    transactions = db.relationship('Transaction', backref='user', lazy=True)
+    transactions = db.relationship('Transaction', backref='the_user', lazy=True)
     # stocks = db.relationship('Stock', backref='owner', lazy=True) # COME BACK lazy
 
     # need fns to CRUD user

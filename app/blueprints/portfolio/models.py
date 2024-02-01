@@ -14,7 +14,7 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
     total_divested = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
     avg_price = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
     real_value = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
-    transactions = db.relationship('Transaction', backref='stock', lazy=True)
+    transactions = db.relationship('Transaction', backref='the_stock', lazy=True)
     # user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # 'user.id' refers to User class, their id primary key...; this accepts an input either as string or integer and turns to integer
 
 
