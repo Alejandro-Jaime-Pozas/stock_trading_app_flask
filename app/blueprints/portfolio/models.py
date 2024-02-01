@@ -8,13 +8,14 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
     ticker = db.Column(db.String(8), nullable=False) # not unique since multiple users can have same stock
     new_price = db.Column(db.Float, nullable=False)
     new_shares = db.Column(db.Integer, nullable=False)
-    create_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) # why no () for utcnow?
+    create_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) # why no () for utcnow? for some reason should store the function itself, not function call
     total_shares = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
     total_invested = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
     total_divested = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
     avg_price = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
     real_value = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # 'user.id' refers to User class, their id primary key...; this accepts an input either as string or integer and turns to integer
+    transactions = db.relationship('Transaction', backref='stock', lazy=True)
+    # user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # 'user.id' refers to User class, their id primary key...; this accepts an input either as string or integer and turns to integer
 
 
     def __init__(self, **kwargs):
@@ -54,12 +55,7 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
                 self.total_divested += self.new_shares * self.new_price
             db.session.commit()
 
-    def delete(self): # , data
-        # for key in data:
-        #     if key == 'new_shares':
-        #         if self.total_shares + data['new_shares'] <= 0:
-        #             return jsonify({'error': f'You cannot remove more shares than you own ({self.total_shares})'}), 400
-        #         setattr(self, key, data[key])
+    def delete(self):
         db.session.delete(self)
         db.session.commit()
 
@@ -77,3 +73,20 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
             'real_value': self.real_value,
             'owner': User.query.get(self.user_id).to_dict() # this returns the User to_dict() fn from User class...smart
         }
+    
+
+# this transaction could either be buy/sell of user stocks, or add/remove funds. and in future should support other transactions such as savings acct, bank transfers etc.
+class Transaction(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    transaction_type = db.Column(db.String(50), nullable=False)
+    amount = db.Column(db.Float)
+    cash_in = db.Column(db.Boolean, nullable=False)
+    user = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    stock = db.Column(db.Integer, db.ForeignKey('stock.id'), nullable=True)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        db.session.add(self)
+        db.session.commit() # no need to include obj in commit()
