@@ -1,7 +1,7 @@
 from . import bp as portfolio
 from flask import jsonify, request
 from ..auth.http_auth import token_auth
-from .models import Stock # when models is complete remove comment
+from .models import Stock, Transaction # when models is complete remove comment
 from ..auth.models import User
 from app import db
 

@@ -80,13 +80,48 @@ class Transaction(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    transaction_type = db.Column(db.String(50), nullable=False)
-    amount = db.Column(db.Float)
-    cash_in = db.Column(db.Boolean, nullable=False)
-    user = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    stock = db.Column(db.Integer, db.ForeignKey('stock.id'), nullable=True)
+    transaction_type = db.Column(db.String(50), nullable=False) # stock vs cash
+    amount = db.Column(db.Float) # cash only field
+    ticker = db.Column(db.String(8)) # stock only field
+    new_price = db.Column(db.Float) # stock only field
+    new_shares = db.Column(db.Integer) # stock only field
+    cash_in = db.Column(db.Boolean, nullable=False) # True or False
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # one user
+    stock_id = db.Column(db.Integer, db.ForeignKey('stock.id'), nullable=True) # 0 or 1 stock
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # some logic here to update either the user's cash or the stock's data
+        if self.transaction_type == 'cash':
+            pass
+        elif self.transaction_type == 'stock':
+            pass
         db.session.add(self)
         db.session.commit() # no need to include obj in commit()
+
+    def __repr__(self):
+        return f"<Transaction | id={self.id} | type={self.transaction_type} | user={self.user} | ticker={self.ticker}"
+    
+    # if user transaction is deposit or withdrawal of cash
+    def update_user(self):
+        user = User.query.get(self.user_id)
+        user.update({'cash': self.amount})
+        return user.cash
+
+    # if user transaction is buying/selling a stock
+    def update_stock(self):
+        pass
+
+    def to_dict(self, ):
+        return {
+            'id': self.id,
+            'datetime': self.datetime, 
+            'transaction_type': self.transaction_type, 
+            'amount': self.amount, 
+            'ticker': self.ticker, 
+            'new_price': self.new_price, 
+            'new_shares': self.new_shares, 
+            'cash_in': self.cash_in, 
+            'user': self.user_id, # these only give the id, need to get the actual object
+            'stock': self.stock_id, # these only give the id, need to get the actual object
+        }

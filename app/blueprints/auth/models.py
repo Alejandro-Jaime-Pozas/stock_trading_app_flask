@@ -28,11 +28,6 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
     def __repr__(self):
         return f"<User|{self.username}, {self.email}>"
 
-    def cash_balance(self):
-        # the user will either press deposit/add or withdraw funds button on react..create handleClick for each 
-        # both add/remove funds are put methods, changing the value of the cash attr...need token and body
-        pass
-
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
@@ -53,7 +48,7 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
         for field in data:
             if field not in {'username', 'email', 'password', 'cash'}: 
                 continue
-            if field == 'password': # THIS FIELD IS NOT UPDATING WITH HASHED PASSWORD
+            if field == 'password':
                 new_hash = generate_password_hash(data[field])
                 setattr(self, field, new_hash) # for dictionaries, sets self (user instance)'s pwd to new hash pwd to be able to compare encrypted pwd to real pwd
                 continue 
@@ -71,5 +66,6 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
             'username': self.username,
             'email': self.email,
             'date_created': self.date_created,
-            'cash': self.cash
+            'cash': self.cash,
+            'total_transactions': len(self.transactions)
         }
