@@ -1,7 +1,7 @@
 from app import db
 from datetime import datetime
 from app.blueprints.auth.models import User
-from flask import jsonify
+# from flask import jsonify
 
 class Stock(db.Model): # would want to add transaction history...so instead of just Stock model, buy/sell model too
     id = db.Column(db.Integer, primary_key=True)
@@ -9,6 +9,7 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
     new_price = db.Column(db.Float, nullable=False)
     new_shares = db.Column(db.Integer, nullable=False)
     create_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) # why no () for utcnow? for some reason should store the function itself, not function call
+    active = db.Column(db.Boolean, nullable=False, default=True) # if 0 shares, change to False
     total_shares = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
     total_invested = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
     total_divested = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
@@ -19,12 +20,12 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
 
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(**kwargs) # new_shares and new_price from Transaction should be included here
         db.session.add(self)
         db.session.commit()
 
     def __repr__(self):
-        return f'< Stock {self.ticker}|user id {self.user_id}'
+        return f'<id: {self.id} | Stock {self.ticker}>'
 
     def update(self, data): # data is the dict of new_price and new_shares...
         # need to take the data in, change new_price and new_shares, and set new values for calculations...
@@ -37,7 +38,7 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
         # if self.new_price * self.new_shares > User.query.get(self.user_id).cash:
         #     return jsonify({'error': f'You do not have enough cash for this trade'}), 400
         # if for 1st instance when stock created
-        if not self.total_shares:
+        if not self.total_shares: # WILL NEED TO ACCT FOR WHEN SHARES GO DOWN TO 0 IF USER SELLS ALL
             self.total_shares = self.new_shares
             self.total_invested = self.new_shares * self.new_price
             self.avg_price = self.new_price
@@ -79,7 +80,7 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
 class Transaction(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
-    datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) # created
     transaction_type = db.Column(db.String(50), nullable=False) # stock vs cash
     amount = db.Column(db.Float) # cash only field
     ticker = db.Column(db.String(8)) # stock only field
@@ -100,17 +101,23 @@ class Transaction(db.Model):
         db.session.commit() # no need to include obj in commit()
 
     def __repr__(self):
-        return f"<Transaction | id={self.id} | type={self.transaction_type} | user={self.user} | ticker={self.ticker}"
+        return f"<Transaction | id={self.id} | type={self.transaction_type} | user_id={self.user_id} | ticker={self.ticker}"
     
-    # if user transaction is deposit or withdrawal of cash
-    def update_user(self):
-        user = User.query.get(self.user_id)
+    # if user transaction is deposit or withdrawal of cash, update the user's cash with new amount
+    def update_user_cash(self):
+        user = User.query.get(self.user_id) # esto no se si funciona pq no se en que momento se especifica self.user_id
         user.update({'cash': self.amount})
         return user.cash
 
-    # if user transaction is buying/selling a stock
-    def update_stock(self):
-        pass
+    # if user transaction is buying/selling a stock, update stock if existing, or create new stock if not
+    def update_stock(self, **kwargs):
+        stock_exists = Transaction.query.filter(Transaction.ticker==self.ticker).first()
+        # if user already owns the stock, then get the existing stock and update it with data
+        if stock_exists:
+            stock_exists.update(**kwargs) # CHECK IF WORKS
+        # if user doesn't own the stock, create new stock with data
+        else:
+            Stock(**kwargs)
 
     def to_dict(self, ):
         return {
@@ -122,6 +129,6 @@ class Transaction(db.Model):
             'new_price': self.new_price, 
             'new_shares': self.new_shares, 
             'cash_in': self.cash_in, 
-            'user': self.user_id, # these only give the id, need to get the actual object
-            'stock': self.stock_id, # these only give the id, need to get the actual object
+            'user': self.user_id, # these only give the id, need to get the actual object & return its to_dict method
+            'stock': self.stock_id, # these only give the id, need to get the actual object & return its to_dict method
         }

@@ -32,9 +32,10 @@ def create_stock():
         if stock.ticker == data['ticker']:
             return jsonify({'error': f'You already have {stock.ticker} in your stocks.'}), 400 # bad req
     data['user_id'] = current_user.id # here we are adding a field to dictionary of data that would read {'user_id': 1}
+    # will replace this below from Stock to Transaction
     new_stock = Stock(**data)
     new_stock.calculations()
-    current_user.cash -= new_stock.new_price * new_stock.new_shares 
+    current_user.cash -= new_stock.new_price * new_stock.new_shares #MAY REMOVE THIS SINCE INCLUDED IN TRANSACTION METHOD
     db.session.commit()
     return jsonify(new_stock.to_dict()), 201 # success
 
