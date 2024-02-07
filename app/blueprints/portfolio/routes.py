@@ -84,25 +84,25 @@ def update_stock(stock_id):
         user.cash += stock.new_price * -stock.new_shares
     # check if user sold all of the stock
     if stock.total_shares == 0:
-        stock.delete()
+        stock.active = False # dont forget to set active to True once stock is re-bought
     db.session.commit()
     return jsonify(stock.to_dict())
 
 
-# delete a stock (if remove all funds from stock), dont think i'll need it....           DELETE, token auth
-@portfolio.route('/stocks/<int:stock_id>', methods=["GET", "DELETE"])
-@token_auth.login_required
-def delete_stock(stock_id):
-    # only do this if user removes all shares, so shares equals 0 after the user sells all of his shares (maybe need to add btn to react frontend to remove/delete all shares...)
-    data = request.json
-    for field in {'new_price', 'new_shares'}:
-        if field not in data:
-            return jsonify({'error': f'The {field} field is required'}), 400
-    stock = Stock.query.get_or_404(stock_id)
-    current_user = token_auth.current_user()
-    if current_user.id != stock.user_id:
-        return jsonify({'error': f'You are not authorized to delete this stock with stock id # {stock_id}'}), 401
-    current_user.cash -= stock.new_price * stock.new_shares
-    stock.delete(data)
-    db.session.commit()
-    return jsonify({'success': f'You have successfully deleted all of your {stock.total_shares} shares of {stock.ticker} stock'}), 201 # strange this still prints out stock even though it was just deleted one line earlier..maybe to do with it being in a fn?
+# # delete a stock (if remove all funds from stock), dont think i'll need it....           DELETE, token auth
+# @portfolio.route('/stocks/<int:stock_id>', methods=["GET", "DELETE"])
+# @token_auth.login_required
+# def delete_stock(stock_id):
+#     # only do this if user removes all shares, so shares equals 0 after the user sells all of his shares (maybe need to add btn to react frontend to remove/delete all shares...)
+#     data = request.json
+#     for field in {'new_price', 'new_shares'}:
+#         if field not in data:
+#             return jsonify({'error': f'The {field} field is required'}), 400
+#     stock = Stock.query.get_or_404(stock_id)
+#     current_user = token_auth.current_user()
+#     if current_user.id != stock.user_id:
+#         return jsonify({'error': f'You are not authorized to delete this stock with stock id # {stock_id}'}), 401
+#     current_user.cash -= stock.new_price * stock.new_shares
+#     stock.delete(data)
+#     db.session.commit()
+#     return jsonify({'success': f'You have successfully deleted all of your {stock.total_shares} shares of {stock.ticker} stock'}), 201 # strange this still prints out stock even though it was just deleted one line earlier..maybe to do with it being in a fn?

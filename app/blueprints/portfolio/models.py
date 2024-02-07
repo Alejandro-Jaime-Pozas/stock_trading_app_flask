@@ -21,6 +21,7 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs) # new_shares and new_price from Transaction should be included here
+        self.update(kwargs)
         db.session.add(self)
         db.session.commit()
 
@@ -72,7 +73,7 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
             'total_divested': self.total_divested,
             'avg_price': self.avg_price,
             'real_value': self.real_value,
-            'owner': User.query.get(self.user_id).to_dict() # this returns the User to_dict() fn from User class...smart
+            'user_id': self.transactions[0].user_id if self.transactions else None # this returns the User to_dict() fn from User class...smart
         }
     
 
@@ -94,9 +95,9 @@ class Transaction(db.Model):
         super().__init__(**kwargs)
         # some logic here to update either the user's cash or the stock's data
         if self.transaction_type == 'cash':
-            pass
+            self.update_user_cash()
         elif self.transaction_type == 'stock':
-            pass
+            self.update_stock(**kwargs)
         db.session.add(self)
         db.session.commit() # no need to include obj in commit()
 
@@ -105,19 +106,31 @@ class Transaction(db.Model):
     
     # if user transaction is deposit or withdrawal of cash, update the user's cash with new amount
     def update_user_cash(self):
-        user = User.query.get(self.user_id) # esto no se si funciona pq no se en que momento se especifica self.user_id
+        user = User.query.get(self.user_id) # this should work since user_id is in api endpoint, may need to alter to pass in from app url endpoint
         user.update({'cash': self.amount})
         return user.cash
 
     # if user transaction is buying/selling a stock, update stock if existing, or create new stock if not
     def update_stock(self, **kwargs):
-        stock_exists = Transaction.query.filter(Transaction.ticker==self.ticker).first()
+        stock_exists = Transaction.query.filter(Transaction.ticker==self.ticker).first() # CHANGE THIS TO USER QUERY OF HIS TRANSACTIONS, AND CHECK IF TICKER WITHIN TRANSACTION HISTORY.
         # if user already owns the stock, then get the existing stock and update it with data
         if stock_exists:
-            stock_exists.update(**kwargs) # CHECK IF WORKS
+            # if shares of this stock are 0 (stock deactivated) reactivate the stock
+            if not stock_exists.active:
+                stock_exists.active = True 
+            stock_exists.update(
+                ticker=self.ticker, 
+                new_price=self.new_price, 
+                new_shares=self.new_shares,
+            ) # CHECK IF WORKS
         # if user doesn't own the stock, create new stock with data
         else:
-            Stock(**kwargs)
+            new_stock = Stock(
+                ticker=self.ticker,
+                new_price=self.new_price,
+                new_shares=self.new_shares,
+            ) # does this auto-link the stock to this transaction?
+            self.stock_id = new_stock.id # IMPORTANT to specify relationship here
 
     def to_dict(self, ):
         return {
@@ -129,6 +142,6 @@ class Transaction(db.Model):
             'new_price': self.new_price, 
             'new_shares': self.new_shares, 
             'cash_in': self.cash_in, 
-            'user': self.user_id, # these only give the id, need to get the actual object & return its to_dict method
-            'stock': self.stock_id, # these only give the id, need to get the actual object & return its to_dict method
+            'user': User.query.get(self.user_id).to_dict(),
+            'stock': Stock.query.get(self.stock_id).to_dict() if self.stock_id else None, # transaction could have a stock or not
         }
