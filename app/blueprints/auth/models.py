@@ -26,7 +26,7 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
         db.session.commit()
 
     def __repr__(self):
-        return f"<id: {self.id} | User: {self.username}, {self.email}>"
+        return f"<User|id:{self.id}|username:{self.username},email:{self.email}>"
 
     def check_password(self, password):
         return check_password_hash(self.password, password)

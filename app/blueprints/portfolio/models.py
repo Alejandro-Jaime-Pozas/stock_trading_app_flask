@@ -26,12 +26,12 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
         db.session.commit()
 
     def __repr__(self):
-        return f'<id: {self.id} | Stock {self.ticker}>'
+        return f'<Stock|id:{self.id}|{self.ticker}>'
 
-    def update(self, data): # data is the dict of new_price and new_shares...
+    def update(self, **kwargs): # data is the dict of new_price and new_shares...
         # need to take the data in, change new_price and new_shares, and set new values for calculations...
-        for key in data:
-            setattr(self, key, data[key])
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
         self.calculations()
         db.session.commit()
 
@@ -94,15 +94,15 @@ class Transaction(db.Model):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # some logic here to update either the user's cash or the stock's data
-        if self.transaction_type == 'cash':
+        if self.transaction_type.lower() == 'cash':
             self.update_user_cash()
-        elif self.transaction_type == 'stock':
-            self.update_stock(**kwargs)
+        elif self.transaction_type.lower() == 'stock':
+            self.update_stock()
         db.session.add(self)
         db.session.commit() # no need to include obj in commit()
 
     def __repr__(self):
-        return f"<Transaction | id={self.id} | type={self.transaction_type} | user_id={self.user_id} | ticker={self.ticker}"
+        return f"<Transaction|id:{self.id}|type:{self.transaction_type}|user_id:{self.user_id}|ticker:{self.ticker}>"
     
     # if user transaction is deposit or withdrawal of cash, update the user's cash with new amount
     def update_user_cash(self):
@@ -111,20 +111,27 @@ class Transaction(db.Model):
         return user.cash
 
     # if user transaction is buying/selling a stock, update stock if existing, or create new stock if not
-    def update_stock(self, **kwargs):
-        stock_exists = Transaction.query.filter(Transaction.ticker==self.ticker).first() # CHANGE THIS TO USER QUERY OF HIS TRANSACTIONS, AND CHECK IF TICKER WITHIN TRANSACTION HISTORY.
+    def update_stock(self):
         # if user already owns the stock, then get the existing stock and update it with data
-        if stock_exists:
-            # if shares of this stock are 0 (stock deactivated) reactivate the stock
-            if not stock_exists.active:
-                stock_exists.active = True 
-            stock_exists.update(
-                ticker=self.ticker, 
-                new_price=self.new_price, 
-                new_shares=self.new_shares,
-            ) # CHECK IF WORKS
+        for transaction in User.query.get(self.user_id).transactions:
+            if self.ticker == transaction.ticker:
+                print("STOCK DOES EXIST!!!")
+                this_stock = Stock.query.get(transaction.stock_id) # returns None if no stock
+                # if shares of this stock are 0 (stock deactivated) reactivate the stock
+                if not this_stock.active:
+                    this_stock.active = True 
+                this_stock.update(
+                    ticker=self.ticker, 
+                    new_price=self.new_price, 
+                    new_shares=self.new_shares,
+                )
+                # if user sells all of his stock for this ticker, set stock to inactive
+                if this_stock.total_shares == 0:
+                    this_stock.active = False
+                break 
         # if user doesn't own the stock, create new stock with data
         else:
+            print("STOCK NOT EXISTS")
             new_stock = Stock(
                 ticker=self.ticker,
                 new_price=self.new_price,
