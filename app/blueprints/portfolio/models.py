@@ -10,18 +10,18 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
     new_shares = db.Column(db.Integer, nullable=False)
     create_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) # why no () for utcnow? for some reason should store the function itself, not function call
     active = db.Column(db.Boolean, nullable=False, default=True) # if 0 shares, change to False
-    total_shares = db.Column(db.Integer) # no user input req, these are all calculated with methods in flask
-    total_invested = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
-    total_divested = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
-    avg_price = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
-    real_value = db.Column(db.Float) # no user input req, these are all calculated with methods in flask
+    total_shares = db.Column(db.Integer) # auto-calculated no user input required
+    total_invested = db.Column(db.Float) # auto-calculated no user input required
+    total_divested = db.Column(db.Float) # auto-calculated no user input required
+    avg_price = db.Column(db.Float) # auto-calculated no user input required
+    real_value = db.Column(db.Float) # auto-calculated no user input required
     transactions = db.relationship('Transaction', backref='the_stock', lazy=True)
-    # user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # 'user.id' refers to User class, their id primary key...; this accepts an input either as string or integer and turns to integer
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # 'user.id' refers to User class, their id primary key...; this accepts an input either as string or integer and turns to integer
 
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs) # new_shares and new_price from Transaction should be included here
-        self.update(kwargs)
+        self.update()
         db.session.add(self)
         db.session.commit()
 
@@ -73,7 +73,8 @@ class Stock(db.Model): # would want to add transaction history...so instead of j
             'total_divested': self.total_divested,
             'avg_price': self.avg_price,
             'real_value': self.real_value,
-            'user_id': self.transactions[0].user_id if self.transactions else None # this returns the User to_dict() fn from User class...smart
+            'total_transactions': len(self.transactions),
+            'user': User.query.get(self.user_id).to_dict() # this returns the User to_dict() fn from User class...smart
         }
     
 
@@ -87,7 +88,7 @@ class Transaction(db.Model):
     ticker = db.Column(db.String(8)) # stock only field
     new_price = db.Column(db.Float) # stock only field
     new_shares = db.Column(db.Integer) # stock only field
-    cash_in = db.Column(db.Boolean, nullable=False) # True or False
+    cash_in = db.Column(db.Boolean, nullable=False, default=False) # True or False
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) # one user
     stock_id = db.Column(db.Integer, db.ForeignKey('stock.id'), nullable=True) # 0 or 1 stock
 
@@ -96,8 +97,12 @@ class Transaction(db.Model):
         # some logic here to update either the user's cash or the stock's data
         if self.transaction_type.lower() == 'cash':
             self.update_user_cash()
+            if self.amount > 0:
+                self.cash_in = True 
         elif self.transaction_type.lower() == 'stock':
             self.update_stock()
+            if self.new_shares < 0:
+                self.cash_in = True 
         db.session.add(self)
         db.session.commit() # no need to include obj in commit()
 
@@ -113,31 +118,39 @@ class Transaction(db.Model):
     # if user transaction is buying/selling a stock, update stock if existing, or create new stock if not
     def update_stock(self):
         # if user already owns the stock, then get the existing stock and update it with data
-        for transaction in User.query.get(self.user_id).transactions:
-            if self.ticker == transaction.ticker:
-                print("STOCK DOES EXIST!!!")
-                this_stock = Stock.query.get(transaction.stock_id) # returns None if no stock
-                # if shares of this stock are 0 (stock deactivated) reactivate the stock
-                if not this_stock.active:
-                    this_stock.active = True 
-                this_stock.update(
-                    ticker=self.ticker, 
-                    new_price=self.new_price, 
+        if self.user_id: # check if user_id is being input
+            for transaction in User.query.get(self.user_id).transactions: 
+                if self.ticker == transaction.ticker:
+                    this_stock = Stock.query.get(transaction.stock_id) # returns None if no stock
+                    # if shares of this stock are 0 (stock deactivated) reactivate the stock
+                    if not this_stock.active:
+                        this_stock.active = True 
+                    this_stock.update(
+                        user_id=self.user_id,
+                        ticker=self.ticker, 
+                        new_price=self.new_price, 
+                        new_shares=self.new_shares,
+                    )
+                    self.stock_id = this_stock.id
+                    # if user sells all of his stock for this ticker, set stock to inactive
+                    if this_stock.total_shares == 0:
+                        this_stock.active = False
+                    break 
+            # if user doesn't own the stock, create new stock with data
+            else:
+                new_stock = Stock(
+                    user_id=self.user_id,
+                    ticker=self.ticker,
+                    new_price=self.new_price,
                     new_shares=self.new_shares,
-                )
-                # if user sells all of his stock for this ticker, set stock to inactive
-                if this_stock.total_shares == 0:
-                    this_stock.active = False
-                break 
-        # if user doesn't own the stock, create new stock with data
+                ) # does this auto-link the stock to this transaction?
+                self.stock_id = new_stock.id # IMPORTANT to specify relationship here
         else:
-            print("STOCK NOT EXISTS")
-            new_stock = Stock(
-                ticker=self.ticker,
-                new_price=self.new_price,
-                new_shares=self.new_shares,
-            ) # does this auto-link the stock to this transaction?
-            self.stock_id = new_stock.id # IMPORTANT to specify relationship here
+            return "User cannot be None"
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
 
     def to_dict(self, ):
         return {
@@ -149,6 +162,6 @@ class Transaction(db.Model):
             'new_price': self.new_price, 
             'new_shares': self.new_shares, 
             'cash_in': self.cash_in, 
-            'user': User.query.get(self.user_id).to_dict(),
-            'stock': Stock.query.get(self.stock_id).to_dict() if self.stock_id else None, # transaction could have a stock or not
+            'user_id': self.user_id,
+            'stock': Stock.query.get(self.stock_id).to_dict() if self.stock_id else None, # transaction could have a stock or not since field is nullable
         }

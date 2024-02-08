@@ -8,12 +8,12 @@ from app import db
 # need to acct for the change in cash balance for user after every transaction
 # on the app, will need routes to: 
 
-# create a new stock (buy a new stock you don't own)        POST, token auth
+# create a new stock (buy a new stock you don't own)
 @portfolio.route('/stocks', methods=["GET", "POST" ])
 @token_auth.login_required
 def create_stock():
     if not request.is_json:
-        return jsonify({'error': 'Please send a body'}), 400
+        return jsonify({'error': 'Please send a json body'}), 400
     # receive user info on stock, including price, shares, remove the total $ amount from cash portfolio, add to stock portfolio
     # fetch req from frontend
     data = request.json
@@ -32,12 +32,14 @@ def create_stock():
         if stock.ticker == data['ticker']:
             return jsonify({'error': f'You already have {stock.ticker} in your stocks.'}), 400 # bad req
     data['user_id'] = current_user.id # here we are adding a field to dictionary of data that would read {'user_id': 1}
+    data['transaction_type'] = 'stock'
     # will replace this below from Stock to Transaction
-    new_stock = Stock(**data)
-    new_stock.calculations()
-    current_user.cash -= new_stock.new_price * new_stock.new_shares #MAY REMOVE THIS SINCE INCLUDED IN TRANSACTION METHOD
+    new_stock_trans = Transaction(**data)
+    # new_stock.calculations()
+    current_user.cash -= new_stock_trans.new_price * new_stock_trans.new_shares
     db.session.commit()
-    return jsonify(new_stock.to_dict()), 201 # success
+    return jsonify(new_stock_trans.to_dict()), 201 # success
+
 
 # get all the user's stocks (show user a list of his stocks)    GET, token auth
 @portfolio.route('/<int:user_id>', methods=["GET", ])
@@ -47,11 +49,10 @@ def get_stocks(user_id):
     current_user = token_auth.current_user()
     if current_user.id != user_id:
         return jsonify({'error': f'Your user id of {current_user.id} is not authorized to get these stocks'}), 401
-    return jsonify([stock.to_dict() for stock in current_user.stocks]), 201 # this is returning a list, need to make it json type...
+    return jsonify([stock.to_dict() for stock in current_user.stocks]), 200 # this is returning a list, need to make it json type...
 
 
-# update a stock (add/remove funds)                         PUT, token auth
-# NEED TO CHECK IF USER INPUTS MORE SHARES THAN THEY OWN FOR THAT STOCK..COMPARE THE STOCK BEFORE CHANGING ITS NEW_SHARES...
+# update a stock (add/remove funds)
 @portfolio.route('/stocks/<int:stock_id>', methods=["GET", "PUT"])
 @token_auth.login_required
 def update_stock(stock_id):
@@ -72,21 +73,36 @@ def update_stock(stock_id):
     current_user = token_auth.current_user()
     if current_user.id != stock.user_id:
         return jsonify({'error': f'You are not authorized to edit this stock id\'s values'}), 401
-    user = User.query.get(stock.user_id)
+    # user = User.query.get(stock.user_id)
     # check if user inputs more shares than they can afford
-    if cash_needed > user.cash: # IF USER INPUTS MORE SHARES THAN THEIR CASH ACCT BALANCE
+    if cash_needed > current_user.cash: # IF USER INPUTS MORE SHARES THAN THEIR CASH ACCT BALANCE
         return jsonify({'error': f'Not enough funds for transfer'}), 400
-    stock.update(data) # NEED TO CHECK IF THE USER INPUTS ALL SHARES THEY OWN, MUST SELL ALL, AND DELETE STOCK
+    data['transaction_type'] = 'stock'
+    data['user_id'] = current_user.id
+    data['stock_id'] = stock_id
+    transaction = Transaction(**data) # may need to remove packing/unpacking
+    # stock.update(data) # NEED TO CHECK IF THE USER INPUTS ALL SHARES THEY OWN, MUST SELL ALL, AND DELETE STOCK
     # check if user bought or sold shares, to add to cash acct or remove from it
     if stock.new_shares > 0:
-        user.cash -= stock.new_price * stock.new_shares
+        current_user.cash -= stock.new_price * stock.new_shares
     else:
-        user.cash += stock.new_price * -stock.new_shares
+        current_user.cash += stock.new_price * -stock.new_shares
     # check if user sold all of the stock
     if stock.total_shares == 0:
         stock.active = False # dont forget to set active to True once stock is re-bought
     db.session.commit()
-    return jsonify(stock.to_dict())
+    return jsonify(stock.to_dict()), 200
+
+
+# get all the user's transactions (show user a list of his stocks)    GET, token auth
+@portfolio.route('/<int:user_id>/transactions', methods=["GET", ])
+@token_auth.login_required
+def get_transactions(user_id):
+    # need to get the user's id, and then get all of that user's trans from transaction table with that user id
+    current_user = token_auth.current_user()
+    if current_user.id != user_id:
+        return jsonify({'error': f'Your user id of {current_user.id} is not authorized to get these stocks'}), 401
+    return jsonify([transaction.to_dict() for transaction in current_user.transactions]), 200 # this is returning a list, need to make it json type...
 
 
 # # delete a stock (if remove all funds from stock), dont think i'll need it....           DELETE, token auth
@@ -105,4 +121,4 @@ def update_stock(stock_id):
 #     current_user.cash -= stock.new_price * stock.new_shares
 #     stock.delete(data)
 #     db.session.commit()
-#     return jsonify({'success': f'You have successfully deleted all of your {stock.total_shares} shares of {stock.ticker} stock'}), 201 # strange this still prints out stock even though it was just deleted one line earlier..maybe to do with it being in a fn?
+#     return jsonify({'success': f'You have successfully deleted all of your {stock.total_shares} shares of {stock.ticker} stock'}), 200 # strange this still prints out stock even though it was just deleted one line earlier..maybe to do with it being in a fn?
