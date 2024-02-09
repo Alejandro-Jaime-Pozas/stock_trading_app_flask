@@ -112,7 +112,7 @@ class Transaction(db.Model):
     # if user transaction is deposit or withdrawal of cash, update the user's cash with new amount
     def update_user_cash(self):
         user = User.query.get(self.user_id) # this should work since user_id is in api endpoint, may need to alter to pass in from app url endpoint
-        user.update({'cash': self.amount})
+        user.cash += int(self.amount) # this may not work if amount doesn't convert the string from frontend to float data type
         return user.cash
 
     # if user transaction is buying/selling a stock, update stock if existing, or create new stock if not

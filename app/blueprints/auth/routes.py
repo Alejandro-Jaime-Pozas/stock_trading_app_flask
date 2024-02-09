@@ -2,6 +2,7 @@
 from . import bp as auth
 from .http_auth import basic_auth, token_auth
 from .models import User
+from app.blueprints.portfolio.models import Transaction
 from flask import jsonify, request
 
 
@@ -17,7 +18,7 @@ def create_user():
     username = data['username']
     email = data['email']
     # Check if the username or email already exists
-    user_exists = User.query.filter((User.username == username)|(User.email == email)).all() # COME BACK, shouldn't this work with first()?
+    user_exists = User.query.filter((User.username == username)|(User.email == email)).first()
     # if it is, return back to signup
     if user_exists:
         return jsonify({'error': f"User with username {username} or email {email} already exists"}), 400
@@ -42,7 +43,7 @@ def updated_user(id):
     current_user = token_auth.current_user()
     if current_user.id != id:
         return jsonify({'error': 'You are not allowed to edit this user'}), 403 # what if no jsnofiy??
-    user = User.query.get_or_404(id) # WHY GETTING THE USER AGAIN IF ALREADY HAVE USER IN current_user??
+    # user = User.query.get_or_404(id) # WHY GETTING THE USER AGAIN IF ALREADY HAVE USER IN current_user??
     data = request.json
     # if user tries to update username or email that other user has, reject
     for field in data:
@@ -50,8 +51,14 @@ def updated_user(id):
             user_exists = User.query.filter((User.username == data[field])|(User.email == data[field])).first() # first should work here
             if user_exists:
                 return jsonify({'error': f"{field}: {data[field]} already exists"}), 400 # bad request
-    user.update(data)
-    return jsonify(user.to_dict())
+    current_user.update(data)
+    if data['cash']:
+        Transaction(
+            transaction_type='cash',
+            amount=float(data['cash']), # if for some reason cash passed as str
+            user_id=current_user.id
+        )
+    return jsonify(current_user.to_dict())
 
 
 # delete a user by id

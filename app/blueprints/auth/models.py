@@ -1,6 +1,7 @@
 from app import db
 import os, base64
 from datetime import datetime, timedelta
+# from app.blueprints.portfolio.models import Transaction
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # create user class that has username, email, password, password hash, create date 
@@ -41,7 +42,7 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
         return self.token
 
     def delete(self):
-        db.session.delete(self) # it seems like delete is a fn from the db.session module...
+        db.session.delete(self)
         db.session.commit()
 
     def update(self, data): # COME BACK
@@ -53,7 +54,13 @@ class User(db.Model): # this calls Model class from SQLAlchemy db instance
                 setattr(self, field, new_hash) # for dictionaries, sets self (user instance)'s pwd to new hash pwd to be able to compare encrypted pwd to real pwd
                 continue 
             elif field == 'cash':
-                setattr(self, field, self.cash + int(data[field]))
+            # REMOVING THIS BELOW BC THROWING A CIRC REF ERROR
+            #     # setattr(self, field, self.cash + int(data[field])) # going to change this to create a Transaction
+            #     Transaction(
+            #         transaction_type='cash',
+            #         amount=data[field],
+            #         user_id=self.id
+            #     )
                 continue 
             else:
                 setattr(self, field, data[field])

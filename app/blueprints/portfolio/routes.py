@@ -36,7 +36,7 @@ def create_stock():
     # will replace this below from Stock to Transaction
     new_stock_trans = Transaction(**data)
     # new_stock.calculations()
-    current_user.cash -= new_stock_trans.new_price * new_stock_trans.new_shares
+    current_user.cash -= new_stock_trans.new_price * new_stock_trans.new_shares # in theory, this would count as transaction and there should therefore always be amount in/out whenever a stock is sold...
     db.session.commit()
     return jsonify(new_stock_trans.to_dict()), 201 # success
 
