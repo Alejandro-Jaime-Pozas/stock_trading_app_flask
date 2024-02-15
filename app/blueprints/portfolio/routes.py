@@ -103,7 +103,9 @@ def get_transactions(user_id):
     current_user = token_auth.current_user()
     if current_user.id != user_id:
         return jsonify({'error': f'Your user id of {current_user.id} is not authorized to get these stocks'}), 401
-    return jsonify([transaction.to_dict() for transaction in current_user.transactions]), 200 # this is returning a list, need to make it json type...
+    user_transactions = [transaction.to_dict() for transaction in current_user.transactions]
+    sorted_transactions = sorted(user_transactions, key=lambda t: t['datetime'], reverse=True)
+    return jsonify(sorted_transactions), 200 # this is returning a list, need to make it json type...
 
 
 # # delete a stock (if remove all funds from stock), dont think i'll need it....           DELETE, token auth
