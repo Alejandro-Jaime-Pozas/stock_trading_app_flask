@@ -52,10 +52,11 @@ def updated_user(id):
             if user_exists:
                 return jsonify({'error': f"{field}: {data[field]} already exists"}), 400 # bad request
     current_user.update(data)
-    if data['cash']:
+    cash = data.get('cash')
+    if cash:
         Transaction(
             transaction_type='cash',
-            amount=float(data['cash']), # if for some reason cash passed as str
+            amount=float(cash), # if for some reason cash passed as str
             user_id=current_user.id
         )
     return jsonify(current_user.to_dict())

@@ -60,7 +60,7 @@ def update_stock(stock_id):
     data = request.json
     cash_needed = 1
     stock = Stock.query.get_or_404(stock_id) # returns a not found msg to frontend if 404
-    for field in {'new_price', 'new_shares'}:
+    for field in {'ticker', 'new_price', 'new_shares'}:
         if field not in data:
             return jsonify({'error': f'The {field} field is required'}), 400
         elif field == 'new_shares':
@@ -69,12 +69,13 @@ def update_stock(stock_id):
                 return jsonify({'error': f'You only have {stock.total_shares} shares to sell'}), 400  
             elif data['new_shares'] == 0:
                 return jsonify({'error': f'You need to sell at least 1 share'}), 400  
-        cash_needed *= data[field]
+        cash_needed *= data[field] if field != 'ticker' else 1
     current_user = token_auth.current_user()
     if current_user.id != stock.user_id:
         return jsonify({'error': f'You are not authorized to edit this stock id\'s values'}), 401
     # user = User.query.get(stock.user_id)
     # check if user inputs more shares than they can afford
+    print(type(cash_needed), type(current_user.cash))
     if cash_needed > current_user.cash: # IF USER INPUTS MORE SHARES THAN THEIR CASH ACCT BALANCE
         return jsonify({'error': f'Not enough funds for transfer'}), 400
     data['transaction_type'] = 'stock'
