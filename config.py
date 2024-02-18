@@ -2,6 +2,7 @@
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__)) # COME BACK
+print(__file__)
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess' # gets key from the running app environment and if None, returns sarcastic 'you-will-never-guess'
