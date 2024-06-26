@@ -8,6 +8,7 @@ def my_decorator(func):
 
 @my_decorator
 def say_hello():
-    print("Hello!")
+    print('Hello')
+    return 2 * 4  # for some reason, fn being decorated does not return its contents
 
 print(say_hello())

@@ -1,10 +1,10 @@
 # OVERVIEW
 
-This application is a Flask backend API based on a frontend stock buying and selling web app that allows users to buy and sell stocks among other things. It is designed as an API that allows for CRUD capabilities for users, as well as CRUD abilities for any user's stock portfolio transactions. 
+This application is a Flask backend API based on a frontend stock buying and selling web app that allows users to buy and sell stocks among other things. It is designed as an API that allows for CRUD capabilities for users, as well as CRUD abilities for any user's stock portfolio transactions.
 
-There are 2 main blueprints for this API, the auth and portfolio blueprints. The auth blueprint contains an http authorization module, a models module, and a routes module. The http authorization file contains the general user authentication capabilities as well as token generation. The models module contains the User model. The routes module contains multiple routes to perform CRUD for a given user. 
+There are 2 main blueprints for this API, the auth and portfolio blueprints. The auth blueprint contains an http authorization module, a models module, and a routes module. The http authorization file contains the general user authentication capabilities as well as token generation. The models module contains the User model. The routes module contains multiple routes to perform CRUD for a given user.
 
-The portfolio blueprint contains a models module and a routes module. The models module contains both the Stock and the Transaction models. The Transaction model accounts for any user transactions involving some cash in or cash out movement. The Stock model accounts for a given stock's information based on the user's transaction movements. So, a transaction could involve buying more shares of a stock the user already owns, which would create a new transaction and update the Stock model to reflect the new updates made to that specific user stock. 
+The portfolio blueprint contains a models module and a routes module. The models module contains both the Stock and the Transaction models. The Transaction model accounts for any user transactions involving some cash in or cash out movement. The Stock model accounts for a given stock's information based on the user's transaction movements. So, a transaction could involve buying more shares of a stock the user already owns, which would create a new transaction and update the Stock model to reflect the new updates made to that specific user stock.
 
 
 
